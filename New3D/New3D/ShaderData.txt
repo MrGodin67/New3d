@@ -1,0 +1,5 @@
+FOG_LIGHT FogLightVS.hlsl FogLightVertexShader latest FogLightPS.hlsl FogLightPixelShader latest
+TERRAIN terrainVS.vs TerrainVertexShader latest terrainPS.ps TerrainPixelShader latest
+INSTANCE_POSITION LightInstanceVS.hlsl LightInstanceVertexShader latest lightinstancePS.hlsl LightInstancePixelShader latest
+INSTANCE_FOLIAGE foliage.vs FoliageVertexShader latest foliage.ps FoliagePixelShader latest
+LINE_COLOR colorVS.hlsl ColorVertexShader latest colorPS.hlsl ColorPixelShader latest
