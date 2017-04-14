@@ -172,8 +172,10 @@ void Graphics::D2D_RenderText(FontFactory::FontDesc& desc, const D2D1_MATRIX_3X2
 	ID2D1SolidColorBrush *pBrush = m_pD2DWhiteBrush;
 	pBrush->SetColor(desc.color);
 	UINT strLen = lstrlen(desc.text.c_str());
+	desc.pFormat->SetTextAlignment(desc.alignment);
 	m_pD2DRenderTarget->DrawTextW(const_cast<WCHAR*>(desc.text.c_str()), strLen, desc.pFormat, desc.drawRect, pBrush);
 	m_pD2DRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
+	desc.pFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
 }
 void Graphics::D2D_DrawEllipse(const D2D_POINT_2F& center,const D2D1_POINT_2F& radius, const D2D1_COLOR_F& color,const D2D1_MATRIX_3X2_F& matrix)
 {

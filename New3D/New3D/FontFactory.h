@@ -23,6 +23,7 @@ public:
 		IDWriteTextFormat *pFormat = nullptr;
 		D2D1_RECT_F drawRect = D2D1::RectF();
 		D2D1_COLOR_F color = D2D1::ColorF(1.0f, 1.0f, 1.0f, 1.0f);
+		DWRITE_TEXT_ALIGNMENT alignment = DWRITE_TEXT_ALIGNMENT_LEADING;
 		FontDesc() {}
 		FontDesc(std::wstring text, IDWriteTextFormat* format, D2D1_RECT_F rect, D2D1_COLOR_F color)
 			:text(text), pFormat(format), drawRect(rect), color(color)

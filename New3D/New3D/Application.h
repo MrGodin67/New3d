@@ -6,6 +6,8 @@
 #include "Camera3D_2.h"
 #include "ShaderFactory.h"
 #include "ColorLightShader.h"
+
+static class Application* app;
 class Application :
 	public Game
 {
@@ -13,7 +15,13 @@ class Application :
 	std::unique_ptr<ColorShaderClass> m_shader;
 	std::unique_ptr<ShaderFactory::ShaderManager> m_shaders;
 private:
+	
+	
+	FontFactory::FontDesc txtDesc;
+public:
+	bool InitTerrain(char* fn);
 	void InitShaders();
+	
 public:
 	Application(class Direct3DWindow& wnd);
 	~Application();

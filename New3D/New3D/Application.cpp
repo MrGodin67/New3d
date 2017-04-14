@@ -2,6 +2,13 @@
 #include "Application.h"
 #include "Direct3DWindow.h"
 
+bool doThis(char* txt)
+{
+	app->InitShaders();
+	app->loaded =  app->InitTerrain(txt);
+	return app->loaded;
+}
+
 void Application::InitShaders()
 {
 	HRESULT hr = ShaderFactory::CreateConstMatrixBuffer();
@@ -25,16 +32,23 @@ void Application::InitShaders()
 
 }
 
+bool Application::InitTerrain(char* fn)
+{
+	if (!m_terrain->Initialize(gfx.GetDevice(),fn))// "data\\setup.txt"))
+	{
+		return false;
+	};
+	return true;
+}
+
 Application::Application(Direct3DWindow& wnd)
 	:Game(wnd)
 {
+	app = this;
 	
-	InitShaders();
 	m_terrain = std::make_unique<TerrainClass>();
-	if (!m_terrain->Initialize(gfx.GetDevice(), "data\\setup.txt"))
-	{
-		int x = 0;
-	};
+	fut = std::async(doThis,(char*)"data\\setup.txt");
+	//InitTerrain("data\\setup.txt");
 	m_shader = std::make_unique<ColorShaderClass>();
 	m_shader->Initialize(gfx.GetDevice(), gfx.GetHandle());
 	float aspect = (float)(gfx.GetViewport().Width / gfx.GetViewport().Height);
@@ -50,6 +64,12 @@ Application::Application(Direct3DWindow& wnd)
 	m_cam.SetResetCursorAfterMove(true);
 	
 	m_cam.FrameMove(0.016f);
+	txtDesc.color = D2D1::ColorF(1.0f,1.0f,1.0f,1.0f);
+	txtDesc.text = L"Loading Level.. ";
+	txtDesc.drawRect = D2D1::RectF((float)(wnd.ScreenWidth() / 2) - 100.0f, (float)(wnd.ScreenHeight() / 2), (float)(wnd.ScreenWidth() / 2)+100.0f, (float)(wnd.ScreenHeight() / 2)+30.0f);
+	txtDesc.pFormat = gfx.D2DFonts()->GetFormat("Tahoma12");
+	txtDesc.alignment = DWRITE_TEXT_ALIGNMENT_CENTER;
+	
 	
 
 }
@@ -79,10 +99,17 @@ HRESULT Application::OnRender(RenderEventArgs & e)
 	gfx.BeginScene(DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 	gfx.EnableWireframe();
 	//gfx.DisableCulling();
-	m_terrain->Render(gfx.GetContext());
-	DirectX::XMMATRIX world = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-	int index = m_terrain->GetIndexCount();
-	m_shader->Render(gfx.GetContext(), index, world, m_cam.GetViewMatrix(), gfx.m_projectionMatrix);
+	
+	if (loaded)
+	{
+		m_terrain->Render(gfx.GetContext());
+		DirectX::XMMATRIX world = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+		m_shader->Render(gfx.GetContext(), m_terrain->GetIndexCount(), world, m_cam.GetViewMatrix(), gfx.m_projectionMatrix);
+	}
+	else
+	{
+		gfx.D2D_RenderText(txtDesc);
+	}
 	gfx.EndScene();
 	return S_OK;
 }

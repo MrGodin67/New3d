@@ -2,10 +2,15 @@
 #include "Graphics.h"
 #include "Events.h"
 #include "Camera3D_2.h"
+#include <future> 
 class Game
 {
-protected:
+public:
 	Graphics gfx;
+	bool loaded = false;
+	std::future<bool> fut;
+protected:
+	
 	void EndApp();
 	CFirstPersonCamera& m_cam;
 	enum GAME_STATE
