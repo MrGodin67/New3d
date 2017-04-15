@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Camera3D_2.cpp" />
+    <ClCompile Include="Collision.cpp" />
     <ClCompile Include="ColorLightShader.cpp" />
     <ClCompile Include="colorshaderclass.cpp" />
     <ClCompile Include="D2D1Texture.cpp" />
@@ -160,15 +161,19 @@
     <ClCompile Include="MeshFactory.cpp" />
     <ClCompile Include="Model2.cpp" />
     <ClCompile Include="ObjParser.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="ShaderFactory.cpp" />
     <ClCompile Include="StringHandler.cpp" />
-    <ClCompile Include="terrainclass.cpp" />
+    <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="TerrainCell.cpp" />
+    <ClCompile Include="TerrainShader.cpp" />
     <ClCompile Include="TextureFactory.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="Camera3D_2.h" />
+    <ClInclude Include="Collision.h" />
     <ClInclude Include="ColorLightShader.h" />
     <ClInclude Include="colorshaderclass.h" />
     <ClInclude Include="D2D1Texture.h" />
@@ -187,10 +192,13 @@
     <ClInclude Include="Model2.h" />
     <ClInclude Include="ObjParser.h" />
     <ClInclude Include="PercompIncludes.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ShaderFactory.h" />
     <ClInclude Include="StringHandler.h" />
     <ClInclude Include="Table.h" />
-    <ClInclude Include="terrainclass.h" />
+    <ClInclude Include="Terrain.h" />
+    <ClInclude Include="TerrainCell.h" />
+    <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="TextureFactory.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>

@@ -11,7 +11,7 @@ ShaderFactory::ConstBuffers::DirectionalLight ShaderFactory::ConstBuffers::Defau
 	{1.0f,1.0f,1.0f,1.0f},
 	{0.80f,0.80f,0.80f,1.0f},
 	{ 0.85f,0.85f,0.85f,1.0f },
-	{ 100.0f,4.0f,-128.5f }
+	{ 0.0f,4.0f,-0.5f }
 };
 ShaderFactory::ConstBuffers::Fog ShaderFactory::ConstBuffers::DefaultFog =
 {

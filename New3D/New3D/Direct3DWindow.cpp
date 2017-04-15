@@ -61,11 +61,7 @@ bool Direct3DWindow::ProcessMessage()
 		DispatchMessage(&msg);
 		if (msg.message == WM_QUIT)
 		{
-			if (!m_pGame->loaded)
-			{
-				bool res = m_pGame->fut.get();
-			}
-				ok = false;
+			ok = false;
 		}
 	}
 

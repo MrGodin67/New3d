@@ -3,6 +3,7 @@
 #include "FontFactory.h"
 #include "ShaderFactory.h"
 #include "Locator.h"
+#include "Terrain.h"
 class Graphics : public Direct3D
 {
 public:
@@ -15,6 +16,7 @@ public:
 	~Graphics();
 	HRESULT BeginScene(DirectX::XMFLOAT4 color);
 	HRESULT EndScene();
+	HRESULT RenderTerrain(Terrain * terrain, ShaderFactory::Shader * shader);
 	HRESULT RenderModel(class Model2& model, const DirectX::XMMATRIX& matrix, ShaderFactory::Shader* shader);
 	///////////
 	// Direct 2D

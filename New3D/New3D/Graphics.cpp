@@ -1,7 +1,7 @@
 #include "PercompIncludes.h"
 #include "Graphics.h"
 #include "Geometry.h"
-
+#include "Locator.h"
 #include "Model2.h"
 
 
@@ -60,14 +60,24 @@ HRESULT Graphics::EndScene()
 	}
 	return hr;
 }
-#if 0
 HRESULT Graphics::RenderTerrain(Terrain * terrain, ShaderFactory::Shader * shader)
 {
 	HRESULT hr = S_OK;
+	XMMATRIX world = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	m_pImmediateContext->UpdateSubresource(ShaderFactory::ConstMatrixBuffers[ShaderFactory::CB_object], 0, nullptr, &XMMatrixTranspose(world), 0, 0);
 	
+	for (int c = 0; c < terrain->RenderCount(); c++)
+	{
+		hr = ShaderFactory::RenderShader<Geometry::LOD_VertexMax>(
+			shader,
+			terrain->RenderCells(c)->GetVertexBuffer(),
+			terrain->RenderCells(c)->GetIndexBuffer(),
+			terrain->RenderCells(c)->GetVertexCount(),
+			terrain->GetTextures());
+
+	}
 	return hr;
 }
-#endif
 HRESULT Graphics::RenderModel(Model2 & model, const DirectX::XMMATRIX & matrix, ShaderFactory::Shader * shader)
 {
 	m_pImmediateContext->UpdateSubresource(ShaderFactory::ConstMatrixBuffers[ShaderFactory::CB_object], 0, nullptr, &XMMatrixTranspose(matrix), 0, 0);

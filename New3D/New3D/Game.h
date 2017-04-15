@@ -7,8 +7,7 @@ class Game
 {
 public:
 	Graphics gfx;
-	bool loaded = false;
-	std::future<bool> fut;
+	
 protected:
 	
 	void EndApp();

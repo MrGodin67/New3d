@@ -2,20 +2,30 @@
 #include "Application.h"
 #include "Direct3DWindow.h"
 
-bool doThis(char* txt)
+
+
+bool Application::InitTerrain()
 {
-	app->InitShaders();
-	app->loaded =  app->InitTerrain(txt);
-	return app->loaded;
+	Terrain::TerrainDesc desc;
+	desc.colorMapFilename = "data\\colorm02.bmp";
+	desc.height = 257;
+	desc.width = 257;
+	
+	desc.heightOffset = 812.0f;
+	desc.position = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+	desc.heightMapFilename = "data\\output.r16";
+	desc.textureFilenames.push_back("data\\dirt01d.tga");
+	desc.textureFilenames.push_back("data\\dirt01n.tga");
+	m_terrain = std::make_unique<Terrain>(desc);
+	if (!m_terrain)
+		return false;
+	return true;
 }
 
 void Application::InitShaders()
 {
 	HRESULT hr = ShaderFactory::CreateConstMatrixBuffer();
-	if (FAILED(hr))
-	{
-		int x = 0;
-	}
+	hr = ShaderFactory::CreateFogLightBuffer(ShaderFactory::ConstBuffers::DefaultAmbientLight, ShaderFactory::ConstBuffers::DefaultFog);
 	m_shaders = std::make_unique<ShaderFactory::ShaderManager>();
 	ShaderFactory::InitShaderDesc desc;
 	desc.first.filename = L"lightVS.hlsl";
@@ -26,41 +36,39 @@ void Application::InitShaders()
 	desc.second.entryPoint = "LightPixelShader";
 	desc.second.version = "latest";
 	m_shaders->AddShader<ColorLightShader>(desc);
+	//TERRAIN terrainVS.vs TerrainVertexShader latest terrainPS.ps TerrainPixelShader latest
+	
+	desc.first.filename = L"terrainVS.vs";
+	desc.first.entryPoint = "TerrainVertexShader";
+	desc.first.version = "latest";
 
-
+	desc.second.filename = L"terrainPS.ps";
+	desc.second.entryPoint = "TerrainPixelShader";
+	desc.second.version = "latest";
+	m_shaders->AddShader<TerrainShader>(desc);
 
 
 }
 
-bool Application::InitTerrain(char* fn)
-{
-	if (!m_terrain->Initialize(gfx.GetDevice(),fn))// "data\\setup.txt"))
-	{
-		return false;
-	};
-	return true;
-}
+
 
 Application::Application(Direct3DWindow& wnd)
 	:Game(wnd)
 {
-	app = this;
-	
-	m_terrain = std::make_unique<TerrainClass>();
-	fut = std::async(doThis,(char*)"data\\setup.txt");
-	//InitTerrain("data\\setup.txt");
+	InitShaders();
+	InitTerrain();
 	m_shader = std::make_unique<ColorShaderClass>();
 	m_shader->Initialize(gfx.GetDevice(), gfx.GetHandle());
 	float aspect = (float)(gfx.GetViewport().Width / gfx.GetViewport().Height);
 	m_cam.SetProjParams(0.25f*DirectX::XM_PI, aspect, 0.1f, 1000.0f);
-	m_cam.SetViewParams(DirectX::XMVectorSet(3.0f, 10.75f, 3.0f, 1.0f), DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f));
+	m_cam.SetViewParams(DirectX::XMVectorSet(128.0f, 0.75f, 128.0f, 1.0f), DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f));
 	m_cam.SetRotateButtons(false, false, true);
 	m_cam.SetEnablePositionMovement(true);
-	m_cam.SetEnableYAxisMovement(true);
-	m_cam.SetNumberOfFramesToSmoothMouseData(12);
-	m_cam.SetScalers(0.004f, 12.0f);
+	m_cam.SetEnableYAxisMovement(false);
+	m_cam.SetNumberOfFramesToSmoothMouseData(5);
+	m_cam.SetScalers(0.004f, 2.0f);
 	m_cam.SetViewPortCenter(DirectX::XMFLOAT2((float)(gfx.GetViewport().Width / 2), (float)(gfx.GetViewport().Height / 2)));
-	m_cam.SetDrag(true);
+	m_cam.SetDrag(false);
 	m_cam.SetResetCursorAfterMove(true);
 	
 	m_cam.FrameMove(0.016f);
@@ -70,6 +78,7 @@ Application::Application(Direct3DWindow& wnd)
 	txtDesc.pFormat = gfx.D2DFonts()->GetFormat("Tahoma12");
 	txtDesc.alignment = DWRITE_TEXT_ALIGNMENT_CENTER;
 	
+	m_player = std::make_unique<Player>(m_cam);
 	
 
 }
@@ -78,10 +87,12 @@ Application::Application(Direct3DWindow& wnd)
 Application::~Application()
 {
 	m_shader->Shutdown();
-	m_terrain->Shutdown();
+	
 	SafeRelease(ShaderFactory::ConstMatrixBuffers[0]);
 	SafeRelease(ShaderFactory::ConstMatrixBuffers[1]);
 	SafeRelease(ShaderFactory::ConstMatrixBuffers[2]);
+	SafeRelease(ShaderFactory::ConstFogLightBuffers[0]);
+	SafeRelease(ShaderFactory::ConstFogLightBuffers[1]);
 	//HRESULT hr = ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY);
 }
 
@@ -89,27 +100,19 @@ HRESULT Application::OnUpdate(UpdateEventArgs & e)
 {
 	m_cam.FrameMove(e.ElapsedTime);
 	gfx.GetContext()->UpdateSubresource(ShaderFactory::ConstMatrixBuffers[ShaderFactory::CB_frame], 0, nullptr, &XMMatrixTranspose(m_cam.GetViewMatrix()), 0, 0);
-	gfx.GetContext()->UpdateSubresource(ShaderFactory::ConstMatrixBuffers[ShaderFactory::CB_frame], 0, nullptr, &XMMatrixTranspose(m_cam.GetProjMatrix()), 0, 0);
+	gfx.GetContext()->UpdateSubresource(ShaderFactory::ConstMatrixBuffers[ShaderFactory::CB_projection], 0, nullptr, &XMMatrixTranspose(m_cam.GetProjMatrix()), 0, 0);
 	
+	m_terrain->FindCellsInView(m_cam.GetFrustum());
+	m_player->Update(e.ElapsedTime, m_terrain.get());
 	return S_OK;
 }
 
 HRESULT Application::OnRender(RenderEventArgs & e)
 {
-	gfx.BeginScene(DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
-	gfx.EnableWireframe();
-	//gfx.DisableCulling();
-	
-	if (loaded)
-	{
-		m_terrain->Render(gfx.GetContext());
-		DirectX::XMMATRIX world = DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.0f);
-		m_shader->Render(gfx.GetContext(), m_terrain->GetIndexCount(), world, m_cam.GetViewMatrix(), gfx.m_projectionMatrix);
-	}
-	else
-	{
-		gfx.D2D_RenderText(txtDesc);
-	}
+	gfx.BeginScene(DirectX::XMFLOAT4(0.85f, 0.85f, 0.85f, 1.0f));
+	//gfx.D2D_RenderText(txtDesc);
+	gfx.RenderTerrain(m_terrain.get(), &m_shaders->GetShader<TerrainShader>());
+	m_player->RenderDebugStats(gfx);
 	gfx.EndScene();
 	return S_OK;
 }
