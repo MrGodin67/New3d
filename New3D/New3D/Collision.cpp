@@ -40,7 +40,7 @@ bool Collision::LineIntersectPlane(const Utilities::LineSegment & line, const Ut
 	if (XMVectorGetX(XMVector3Dot(vTest, IntersectPos - planePt0)) < 0.0f)return false;
 
 
-	distance = XMVectorGetX(XMVector3Length(linePt2 - IntersectPos));
+	distance = XMVectorGetX(XMVector3Length(linePt1 - IntersectPos));
 	XMStoreFloat3(&intersectPt, IntersectPos);
 	
 	return true;
@@ -68,6 +68,49 @@ bool Collision::SphereToPlane( Utilities::Sphere & sphere,  Utilities::Plane & p
 	
 }
 
+bool Collision::SphereToSphere(Utilities::Sphere & A, Utilities::Sphere & B)
+{
+	DirectX::XMVECTOR AtoB = DirectX::XMLoadFloat3(&A.center) - DirectX::XMLoadFloat3(&B.center);
+	float dist = DirectX::XMVectorGetX(DirectX::XMVector3Length(AtoB));
+	return (A.radius + B.radius) > dist;
+
+
+	
+}
+//void Collision::resolveCollision( ball)
+//{
+//	// get the mtd
+//	Vector2d delta = (position.subtract(ball.position));
+//	float d = delta.getLength();
+//	// minimum translation distance to push balls apart after intersecting
+//	Vector2d mtd = delta.multiply(((getRadius() + ball.getRadius()) - d) / d);
+//
+//
+//	// resolve intersection --
+//	// inverse mass quantities
+//	float im1 = 1 / getMass();
+//	float im2 = 1 / ball.getMass();
+//
+//	// push-pull them apart based off their mass
+//	position = position.add(mtd.multiply(im1 / (im1 + im2)));
+//	ball.position = ball.position.subtract(mtd.multiply(im2 / (im1 + im2)));
+//
+//	// impact speed
+//	Vector2d v = (this.velocity.subtract(ball.velocity));
+//	float vn = v.dot(mtd.normalize());
+//
+//	// sphere intersecting but moving away from each other already
+//	if (vn > 0.0f) return;
+//
+//	// collision impulse
+//	float i = (-(1.0f + Constants.restitution) * vn) / (im1 + im2);
+//	Vector2d impulse = mtd.multiply(i);
+//
+//	// change in momentum
+//	this.velocity = this.velocity.add(impulse.multiply(im1));
+//	ball.velocity = ball.velocity.subtract(impulse.multiply(im2));
+//
+//}
 bool Collision::AABBToPlane(const Utilities::BoundingBox & box, const Utilities::Plane plane, DirectX::XMFLOAT3 & intersectPt, float & distance)
 {
 	XMFLOAT3 pt0;

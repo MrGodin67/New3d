@@ -11,6 +11,70 @@ TextureFactory::TextureFactory()
 TextureFactory::~TextureFactory()
 {
 }
+HRESULT TextureFactory::CreateSRVFromFile(SRV_Package & pkg, std::string filename)
+{
+	if (!DXStringHandler::DXDoesFileExist(filename))
+		return E_FAIL;
+
+	HRESULT result;
+	wstring fName;
+	DXStringHandler::DXConvertFromStrToWStr(filename, fName);
+	TexMetadata imageMetadata;
+	
+	unsigned int rowPitch;
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	ScratchImage* pScratchImage = new ScratchImage();
+	ID3D11Texture2D* m_Tex = nullptr;
+	result = LoadFromWICFile(const_cast<WCHAR*>(fName.c_str()), WIC_FLAGS_NONE, &imageMetadata, *pScratchImage);
+	if (FAILED(result))
+	{
+		goto Done;
+	}
+
+
+	pkg.textureDesc.Height = (UINT)imageMetadata.width;
+	pkg.textureDesc.Width = (UINT)imageMetadata.height;
+	pkg.textureDesc.MipLevels = 0;
+	pkg.textureDesc.ArraySize = 1;
+	pkg.textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	pkg.textureDesc.SampleDesc.Count = 1;
+	pkg.textureDesc.SampleDesc.Quality = 0;
+	pkg.textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	pkg.textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	pkg.textureDesc.CPUAccessFlags = 0;
+	pkg.textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+
+
+	int width = (int)imageMetadata.width;
+
+	result = Locator::GetDevice()->CreateTexture2D(&pkg.textureDesc, NULL, &m_Tex);
+	if (FAILED(result))
+	{
+		goto Done;
+	}
+
+	rowPitch = (UINT)((width * 4) * sizeof(unsigned char));
+	Locator::GetContext()->UpdateSubresource(m_Tex, 0, NULL, pScratchImage->GetPixels(), rowPitch, 0);
+
+	srvDesc.Format = pkg.textureDesc.Format;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = 4;
+
+
+	result = Locator::GetDevice()->CreateShaderResourceView(m_Tex, &srvDesc, &pkg.texture);
+	if (FAILED(result))
+	{
+		goto Done;
+	}
+	Locator::GetContext()->GenerateMips(pkg.texture);
+Done:
+	m_Tex->Release();
+	pScratchImage->Release();
+
+	return result;
+
+}
 HRESULT TextureFactory::CreateSRVFromFile(ID3D11ShaderResourceView** outTexture, std::string filename)
 {
 	if (!DXStringHandler::DXDoesFileExist(filename))
@@ -258,6 +322,40 @@ HRESULT TextureFactory::CreateSRVFromFileTGA(ID3D11ShaderResourceView** outTextu
 	delete [] m_targaData;
 	targaTex->Release();
 	return S_OK;
+}
+HRESULT TextureFactory::CreateSRV(SRV_Package & pkg, std::string filename)
+{
+	HRESULT hr = S_OK;
+	if (DXStringHandler::DXDoesFileExist(filename))
+	{
+		std::string ext;
+		DXStringHandler::DXExtractFileExt(filename, ext);
+		if (ext == ".tga")
+		{
+
+			if (FAILED(hr = CreateSRVFromFileTGA(&pkg.texture, filename)))
+			{
+				return E_FAIL;
+			}
+		}
+		else if (ext == ".dds")
+		{
+			if (FAILED(hr = CreateSRVFromFileDDS(&pkg.texture, filename)))
+			{
+				return E_FAIL;
+			}
+		}
+		else if (ext == ".bmp" || ext == ".jpg" || ext == ".png")
+		{
+			if (FAILED(hr = CreateSRVFromFile(pkg, filename)))
+			{
+				return E_FAIL;
+			}
+		}
+		else { return E_FAIL; }// invalid file
+	}
+	else { return E_FAIL; };// file exists
+	return hr;
 }
 HRESULT TextureFactory::CreateSRV(ID3D11ShaderResourceView ** outTexture, std::string filename)
 {

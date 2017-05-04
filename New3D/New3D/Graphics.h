@@ -4,11 +4,16 @@
 #include "ShaderFactory.h"
 #include "Locator.h"
 #include "Terrain.h"
+#include "ShaderFactory.h"
+#include "ColorLightShader.h"
+#include "FogLightShader.h"
+#include "TerrainShader.h"
+#include "MeshFactory.h"
 class Graphics : public Direct3D
 {
 public:
 	
-	HRESULT CreateTextObjects();
+	
 	
 public:
 	Graphics(int screenWidth, int screenHeight, HWND & hwnd,
@@ -16,8 +21,11 @@ public:
 	~Graphics();
 	HRESULT BeginScene(DirectX::XMFLOAT4 color);
 	HRESULT EndScene();
-	HRESULT RenderTerrain(Terrain * terrain, ShaderFactory::Shader * shader);
-	HRESULT RenderModel(class Model2& model, const DirectX::XMMATRIX& matrix, ShaderFactory::Shader* shader);
+	HRESULT RenderPlayerAmmo(struct PlayerAmmo ammo);
+	HRESULT RenderQuad(DirectX::XMMATRIX* matrix, MeshFactory::Mesh<Geometry::LOD_VertexMin>* mesh,
+		ID3D11ShaderResourceView* texture);
+	HRESULT RenderTerrain(Terrain * terrain);
+	HRESULT RenderModel(class Model2& model, const DirectX::XMMATRIX& matrix);
 	///////////
 	// Direct 2D
 	///////////
@@ -34,4 +42,8 @@ public:
 	FontFactory* D2DFonts();
 private:
 	std::unique_ptr<FontFactory> m_FontFactory;
+	std::unique_ptr<ShaderFactory::ShaderManager> m_Shaders;
+private:
+	void InitShaders();
+	HRESULT CreateTextObjects();
 };

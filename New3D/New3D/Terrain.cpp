@@ -149,6 +149,50 @@ bool Terrain::GetHeight(DirectX::XMVECTOR pos, float& height)
 	return false;
 }
 
+TerrainIntersection Terrain::RayIntersectInView(Utilities::LineSegment& line)
+{
+	int index = 0;
+	
+	std::vector<TerrainCell*> tc = m_RenderCells;
+	std::sort(tc.begin(), tc.end(),[&line](TerrainCell* A, TerrainCell* B)
+	{
+		DirectX::XMFLOAT3 AA = A->BoundingBox().center;
+		DirectX::XMFLOAT3 BB = B->BoundingBox().center;
+		DirectX::XMVECTOR a = DirectX::XMLoadFloat3(&AA);
+		DirectX::XMVECTOR b = DirectX::XMLoadFloat3(&BB);
+		DirectX::XMVECTOR c = DirectX::XMLoadFloat3(&line.pt0);
+		return DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(a - c)) <  DirectX::XMVectorGetX(DirectX::XMVector3LengthSq(b - c));
+
+		
+	});
+	
+	for (size_t ii = 0; ii < tc.size(); ii++)
+	{
+		auto& cell = tc[ii];
+		index = 0;
+		std::vector<TerrainIntersection> intersects;
+		for(auto it : cell->m_tri)
+		{
+			TerrainIntersection inter;
+			if (Collision::LineIntersectPlane(line, it, inter.intersectPoint, inter.distance))
+			{
+				inter.hit = true;
+				intersects.push_back(inter);
+			}
+		}
+		if (intersects.size() > 1)
+		{
+			std::sort(intersects.begin(), intersects.end(), [](TerrainIntersection& a, TerrainIntersection& b)
+			{
+				return a.distance < b.distance;
+			});
+			return intersects[0];
+		}else if((intersects.size() == 1))
+		   return intersects[0];
+	}
+	return TerrainIntersection();
+}
+
 HRESULT Terrain::CreateTextures( std::vector<std::string> filenames)
 {
 	HRESULT hr = S_OK;

@@ -5,7 +5,15 @@
 #include <unordered_map>
 class TextureFactory
 {
+public:
+	struct SRV_Package
+	{
+		D3D11_TEXTURE2D_DESC textureDesc;
+		ID3D11ShaderResourceView* texture;
+	};
+private:
 	std::unordered_map<std::string, ID3D11ShaderResourceView*> m_Textures;
+	
 	struct TargaHeader
 	{
 		unsigned char data1[12];
@@ -14,6 +22,7 @@ class TextureFactory
 		unsigned char bpp;
 		unsigned char data2;
 	};
+	static HRESULT CreateSRVFromFile(SRV_Package& pkg, std::string filename);
 	static HRESULT CreateSRVFromFile(ID3D11ShaderResourceView** outTexture, std::string filename);
 	static HRESULT CreateSRVFromFileDDS(ID3D11ShaderResourceView** outTexture, std::string filename);
 	static HRESULT CreateSRVFromFileTGA(ID3D11ShaderResourceView** outTexture, std::string filename);
@@ -22,7 +31,7 @@ public:
 	TextureFactory();
 	~TextureFactory();
 
-
+	static HRESULT CreateSRV(SRV_Package& pkg, std::string filename);
 	static HRESULT CreateSRV(ID3D11ShaderResourceView ** outTexture, std::string filename);
 	class D2D1BitmapTexture
 	{

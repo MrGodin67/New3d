@@ -8,7 +8,12 @@
 #include "Collision.h"
 #include <memory>
 
-
+struct TerrainIntersection
+{
+	DirectX::XMFLOAT3 intersectPoint = { 0.0f,0.0f,0.0f };
+	float distance = 0.0f;
+	bool hit = false;
+};
 struct HeightMapType
 {
 	XMFLOAT3 pos;
@@ -97,4 +102,5 @@ public:
 	ID3D11ShaderResourceView* GetTexture(std::string name);
 	TerrainCell* RenderCells(size_t index);
 	bool GetHeight(DirectX::XMVECTOR pos, float& height);
+	TerrainIntersection RayIntersectInView(Utilities::LineSegment& line);
 };

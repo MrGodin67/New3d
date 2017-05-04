@@ -4,11 +4,11 @@
 #include "Locator.h"
 bool Model2::LoadObjectFile(std::string filename)
 {
-	
+	ObjParser<VertexPTN> parser;
 	std::vector<shape<VertexPTN>> shapes;
 	parser.loadObject(filename , shapes);
 	assert(shapes.size() > 0);
-	
+	m_triangles = parser.allTriangle();
 	m_textures.resize(shapes.size());
 	float minX = FLT_MAX;
 	float maxX = -FLT_MAX;

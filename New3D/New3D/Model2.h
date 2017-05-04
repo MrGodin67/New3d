@@ -8,7 +8,7 @@
 class Model2
 {
 	std::vector<std::unique_ptr<MeshFactory::Mesh<Geometry::LOD_VertexMin>>> m_meshes;
-	ObjParser<VertexPTN> parser;
+	std::vector<Utilities::Plane> m_triangles;
 	Utilities::BoundingBox aabb;
 	std::vector<ID3D11ShaderResourceView*> m_textures;
 public:
@@ -24,5 +24,5 @@ public:
 	{
 		return m_meshes[index].get();
 	};
-	ObjParser<VertexPTN>* getParser() { return &parser; }
+	
 };

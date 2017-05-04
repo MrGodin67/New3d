@@ -70,6 +70,7 @@ private:
 public:
 	VectorType* m_vertexList;
 	VertexType m_vertexType;
+	std::vector<Utilities::Plane> m_tri;
 private:
 	int m_vertexCount, m_indexCount, m_lineIndexCount;
 	ID3D11Buffer *m_vertexBuffer = nullptr, *m_indexBuffer = nullptr,

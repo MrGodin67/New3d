@@ -143,15 +143,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Ammo.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Camera3D_2.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="ColorLightShader.cpp" />
     <ClCompile Include="colorshaderclass.cpp" />
     <ClCompile Include="D2D1Texture.cpp" />
+    <ClCompile Include="DebugInfo.cpp" />
     <ClCompile Include="Direct3DWindow.cpp" />
     <ClCompile Include="Direct3D_2D.cpp" />
     <ClCompile Include="DXErr.cpp" />
+    <ClCompile Include="FogLightShader.cpp" />
     <ClCompile Include="FontFactory.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Geometry.cpp" />
@@ -159,9 +162,12 @@
     <ClCompile Include="Locator.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MeshFactory.cpp" />
+    <ClCompile Include="Meteor.cpp" />
     <ClCompile Include="Model2.cpp" />
     <ClCompile Include="ObjParser.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Quad.cpp" />
+    <ClCompile Include="Retical.cpp" />
     <ClCompile Include="ShaderFactory.cpp" />
     <ClCompile Include="StringHandler.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -171,17 +177,20 @@
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ammo.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="Camera3D_2.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="ColorLightShader.h" />
     <ClInclude Include="colorshaderclass.h" />
     <ClInclude Include="D2D1Texture.h" />
+    <ClInclude Include="DebugInfo.h" />
     <ClInclude Include="Direct3DWindow.h" />
     <ClInclude Include="Direct3D_2D.h" />
     <ClInclude Include="DXErr.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="Exceptions.h" />
+    <ClInclude Include="FogLightShader.h" />
     <ClInclude Include="FontFactory.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Geometry.h" />
@@ -189,10 +198,14 @@
     <ClInclude Include="KeyCodes.h" />
     <ClInclude Include="Locator.h" />
     <ClInclude Include="MeshFactory.h" />
+    <ClInclude Include="Meteor.h" />
     <ClInclude Include="Model2.h" />
+    <ClInclude Include="MyString.h" />
     <ClInclude Include="ObjParser.h" />
     <ClInclude Include="PercompIncludes.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Quad.h" />
+    <ClInclude Include="Retical.h" />
     <ClInclude Include="ShaderFactory.h" />
     <ClInclude Include="StringHandler.h" />
     <ClInclude Include="Table.h" />
@@ -200,6 +213,7 @@
     <ClInclude Include="TerrainCell.h" />
     <ClInclude Include="TerrainShader.h" />
     <ClInclude Include="TextureFactory.h" />
+    <ClInclude Include="Timer.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>

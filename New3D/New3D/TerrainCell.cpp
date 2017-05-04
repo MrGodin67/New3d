@@ -211,7 +211,25 @@ bool TerrainCell::InitializeBuffers(ID3D11Device* device, int nodeIndexX, int no
 		m_vertexList[i].y = vertices[i].position.y;
 		m_vertexList[i].z = vertices[i].position.z;
 	}
-
+	index = 0;
+	for (int i = 0; i < m_vertexCount / 3; i++)
+	{
+		index = i * 3;
+		Utilities::Plane plane;
+		plane.pt0 = XMFLOAT3(m_vertexList[index].x,
+			m_vertexList[index].y,
+			m_vertexList[index].z);
+		index++;
+		plane.pt1 = XMFLOAT3(m_vertexList[index].x,
+			m_vertexList[index].y,
+			m_vertexList[index].z);
+		index++;
+		plane.pt2 = XMFLOAT3(m_vertexList[index].x,
+			m_vertexList[index].y,
+			m_vertexList[index].z);
+		plane.MakeNormal();
+		m_tri.push_back(plane);
+	}
 	// Release the arrays now that the buffers have been created and loaded.
 	delete[] vertices;
 	vertices = 0;

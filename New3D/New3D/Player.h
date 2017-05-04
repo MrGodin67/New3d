@@ -5,18 +5,24 @@ struct PlayerAmmo
 {
 	DirectX::XMVECTOR pos;
 	DirectX::XMVECTOR vel;
+	DirectX::XMVECTOR collisionPt;
+	DirectX::XMFLOAT3 mat_scale = {1.0f,1.0f,1.0f};
+	DirectX::XMMATRIX mat_rot;
 	float speed;
-	float lifeSpan;
+	float lifeSpan = 1.0f;
 	float timer = 0.0f;
 	bool active = true;
-	void update(float dt);
+	float rotation = 0.0f;
+	DirectX::XMMATRIX GetMatrix();
+	void update(float dt, DirectX::XMFLOAT3 playerPos);
 };
 
 struct Gun
 {
 	DirectX::XMVECTOR pos;
 	DirectX::XMVECTOR vel;
-	float speed;
+	
+	float speed = 10.0f;
 	float sideOffset;
 	float timer = 0.0f;
 	float shotDelay;
@@ -42,6 +48,8 @@ struct Gun
 			ammo.pos = pos;
 			ammo.vel = vel;
 			ammo.speed = speed;
+			ammo.active = true;
+			ammo.mat_scale = { 0.1f,0.1f,0.1f };
 			timer = 0.0f;
 			return true;
 		}
@@ -52,6 +60,7 @@ class Player
 {
 private:
 	CFirstPersonCamera& m_cam;
+	
 	float m_heightOffTerrain = 0.25f;
 	Gun m_leftGun;
 	Gun m_rightGun;
@@ -66,8 +75,9 @@ public:
 	{
 		m_leftGun.shotDelay = m_rightGun.shotDelay = 0.75f;
 	}
-	void Update(float dt, class Terrain* terrain);
-	void  SetHeight(float height);
-	void RenderDebugStats(class Graphics& gfx);
+	void Update(float dt, class Terrain* terrain,bool doShot);
+	void SetHeight(float height);
+	void RenderDebugStats(class Graphics& gfx, size_t n_ammo);
+	PlayerAmmo FireShot(DirectX::XMVECTOR target);
 	
 };

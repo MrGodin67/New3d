@@ -3,7 +3,7 @@
 #include "Geometry.h"
 #include "Locator.h"
 #include "Model2.h"
-
+#include "Player.h"
 
 Graphics::Graphics(int screenWidth,int screenHeight,HWND & hwnd,
 	bool v_sync,bool fullscreen)
@@ -11,17 +11,19 @@ Graphics::Graphics(int screenWidth,int screenHeight,HWND & hwnd,
 	Direct3D((UINT)screenWidth,(UINT)screenHeight,hwnd,v_sync,fullscreen)
 {
 	Locator::SetDevices(m_pD2DRenderTarget, m_pDevice.Get(), m_pImmediateContext.Get());
-	float resX = ((GetViewport().TopLeftX + GetViewport().Width) * 0.5f);
-	float resY = ((GetViewport().TopLeftY + GetViewport().Height) * 0.5f);
-	
 	m_FontFactory = std::make_unique<FontFactory>();
+	InitShaders();
 	CreateTextObjects();
 	
 }
 
 Graphics::~Graphics()
 {
-	
+	SafeRelease(ShaderFactory::ConstMatrixBuffers[0]);
+	SafeRelease(ShaderFactory::ConstMatrixBuffers[1]);
+	SafeRelease(ShaderFactory::ConstMatrixBuffers[2]);
+	SafeRelease(ShaderFactory::ConstFogLightBuffers[0]);
+	SafeRelease(ShaderFactory::ConstFogLightBuffers[1]);
 }
 
 HRESULT Graphics::BeginScene(DirectX::XMFLOAT4 color)
@@ -60,7 +62,48 @@ HRESULT Graphics::EndScene()
 	}
 	return hr;
 }
-HRESULT Graphics::RenderTerrain(Terrain * terrain, ShaderFactory::Shader * shader)
+
+HRESULT Graphics::RenderPlayerAmmo(PlayerAmmo ammo)
+{
+	HRESULT hr = S_OK;
+	DisableCulling();
+	EnableAlphaToCoverageBlending();
+	/*XMMATRIX world = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
+	m_pImmediateContext->UpdateSubresource(ShaderFactory::ConstMatrixBuffers[ShaderFactory::CB_object], 0, nullptr, &XMMatrixTranspose(world), 0, 0);
+	
+	hr = ShaderFactory::RenderShader<Geometry::LOD_VertexMin>(
+		shader,
+		m_ammo[0].GetMesh()->GetVertexBuffer(),
+		m_ammo[0].GetMesh()->GetIndexBuffer(),
+		m_ammo[0].GetMesh()->VerticesCount(),
+		tex);*/
+	EnableCulling();
+	DisableAlphaBlending();;
+	return hr;
+}
+
+HRESULT Graphics::RenderQuad(DirectX::XMMATRIX * matrix, MeshFactory::Mesh<Geometry::LOD_VertexMin>* mesh,
+	ID3D11ShaderResourceView* texture)
+{
+	HRESULT hr = S_OK;
+	DisableCulling();
+	EnableAlphaToCoverageBlending();
+	
+	m_pImmediateContext->UpdateSubresource(ShaderFactory::ConstMatrixBuffers[ShaderFactory::CB_object], 0, nullptr, &XMMatrixTranspose(*matrix), 0, 0);
+	std::vector<ID3D11ShaderResourceView*> tex;
+	tex.push_back(texture);
+	hr = ShaderFactory::RenderShader<Geometry::LOD_VertexMin>(
+		&m_Shaders->GetShader<FogLightShader>(),
+	mesh->GetVertexBuffer(),
+	mesh->GetIndexBuffer(),
+	mesh->VerticesCount(),
+	tex);
+	EnableCulling();
+	DisableAlphaBlending();;
+	return hr;
+}
+
+HRESULT Graphics::RenderTerrain(Terrain * terrain)
 {
 	HRESULT hr = S_OK;
 	XMMATRIX world = XMMatrixTranslation(0.0f, 0.0f, 0.0f);
@@ -69,7 +112,7 @@ HRESULT Graphics::RenderTerrain(Terrain * terrain, ShaderFactory::Shader * shade
 	for (int c = 0; c < terrain->RenderCount(); c++)
 	{
 		hr = ShaderFactory::RenderShader<Geometry::LOD_VertexMax>(
-			shader,
+			&m_Shaders->GetShader<TerrainShader>(),
 			terrain->RenderCells(c)->GetVertexBuffer(),
 			terrain->RenderCells(c)->GetIndexBuffer(),
 			terrain->RenderCells(c)->GetVertexCount(),
@@ -78,11 +121,12 @@ HRESULT Graphics::RenderTerrain(Terrain * terrain, ShaderFactory::Shader * shade
 	}
 	return hr;
 }
-HRESULT Graphics::RenderModel(Model2 & model, const DirectX::XMMATRIX & matrix, ShaderFactory::Shader * shader)
+HRESULT Graphics::RenderModel(Model2 & model, const DirectX::XMMATRIX & matrix)
 {
 	m_pImmediateContext->UpdateSubresource(ShaderFactory::ConstMatrixBuffers[ShaderFactory::CB_object], 0, nullptr, &XMMatrixTranspose(matrix), 0, 0);
 	std::vector<ID3D11ShaderResourceView*> tex;
 	HRESULT hr;
+	ShaderFactory::Shader * shader = &m_Shaders->GetShader<FogLightShader>();
 	//EnableAlphaBlending();
 	for (int c = 0; c < model.NumMeshes(); c++)
 	{
@@ -128,6 +172,7 @@ void Graphics::DrawSprite(D2D1_MATRIX_3X2_F * trans, D2D1_RECT_F & PosSize, ID2D
 	  m_pD2DRenderTarget->SetTransform(trans);
 	else
 	  m_pD2DRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
+	
 	
 	m_pD2DRenderTarget->DrawBitmap(pSprite, PosSize, Opacity, InterpMode, ClipRect);
 	
@@ -220,6 +265,41 @@ void Graphics::D2D1_DrawTriangle(D2D1_MATRIX_3X2_F* matrix, const D2D_POINT_2F *
 FontFactory * Graphics::D2DFonts()
 {
 	return m_FontFactory.get();
+}
+
+void Graphics::InitShaders()
+{
+	HRESULT hr = ShaderFactory::CreateConstMatrixBuffer();
+	hr = ShaderFactory::CreateFogLightBuffer(ShaderFactory::ConstBuffers::DefaultAmbientLight, ShaderFactory::ConstBuffers::DefaultFog);
+	m_Shaders = std::make_unique<ShaderFactory::ShaderManager>();
+	ShaderFactory::InitShaderDesc desc;
+	desc.first.filename = L"lightVS.hlsl";
+	desc.first.entryPoint = "LightVertexShader";
+	desc.first.version = "latest";
+
+	desc.second.filename = L"lightPS.hlsl";
+	desc.second.entryPoint = "LightPixelShader";
+	desc.second.version = "latest";
+	m_Shaders->AddShader<ColorLightShader>(desc);
+	//TERRAIN terrainVS.vs TerrainVertexShader latest terrainPS.ps TerrainPixelShader latest
+
+	desc.first.filename = L"terrainVS.vs";
+	desc.first.entryPoint = "TerrainVertexShader";
+	desc.first.version = "latest";
+
+	desc.second.filename = L"terrainPS.ps";
+	desc.second.entryPoint = "TerrainPixelShader";
+	desc.second.version = "latest";
+	m_Shaders->AddShader<TerrainShader>(desc);
+
+	desc.first.filename = L"foglightVS.hlsl";
+	desc.first.entryPoint = "FogLightVertexShader";
+	desc.first.version = "latest";
+
+	desc.second.filename = L"foglightPS.hlsl";
+	desc.second.entryPoint = "FogLightPixelShader";
+	desc.second.version = "latest";
+	m_Shaders->AddShader<FogLightShader>(desc);
 }
 
 
