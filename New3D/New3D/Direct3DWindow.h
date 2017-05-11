@@ -4,6 +4,7 @@
 #include <WindowsX.h>
 #include "Events.h"
 #include "Camera3D_2.h"
+#include "Timer.h"
 
 class Direct3DWindow
 {
@@ -28,7 +29,7 @@ private:
 	void InitializeWindows();
 	void ShutdownWindows();
 	void SetGameObject(Game* game);
-	
+	Timer m_timer;
 	
 private:
 	LPCWSTR m_applicationName;

@@ -6,14 +6,13 @@
 
 struct FormatDesc
 {
-	float m_value;
-	float m_percision;
+	
 	std::wstringstream stream;
 	std::wstring str;
 	FormatDesc(float val, float percision)
-		:m_value(val), m_percision(percision)
 	{
-		stream << fixed << setprecision(percision) << val;
+		
+		stream << fixed << setprecision((long long)percision) << val;
 		str = stream.str();
 		stream.clear();
 	}

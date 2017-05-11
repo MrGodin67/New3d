@@ -97,7 +97,7 @@ void PlayerAmmo::update(float dt,DirectX::XMFLOAT3 playerPos)
 	else
 	{
 		
-		if (DirectX::XMVectorGetX(DirectX::XMVector3Length(pos - collisionPt)) < speed * dt)
+		if (DirectX::XMVectorGetX(DirectX::XMVector3Length(pos - collisionPt)) <= speed * dt)
 			pos = collisionPt;
 		else
 			pos += vel * speed * dt;

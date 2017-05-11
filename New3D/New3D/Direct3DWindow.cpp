@@ -49,7 +49,7 @@ bool Direct3DWindow::ProcessMessage()
 	MSG msg;
 	bool ok;
 	HRESULT hr = S_OK;
-
+	static bool first = true;
 	// Initialize the message structure.
 	ZeroMemory(&msg, sizeof(MSG));
 	static float totalTime = 0.0f;
@@ -64,15 +64,17 @@ bool Direct3DWindow::ProcessMessage()
 			ok = false;
 		}
 	}
-
-	
-	UpdateEventArgs updateEventArgs(0.016f, 0.0f);
-	RenderEventArgs renderEventArgs(0.016f, 0.0f);
-	
-	if (FAILED(m_pGame->OnUpdate(updateEventArgs)))
-		return false;
-	if(FAILED(m_pGame->OnRender(renderEventArgs)))
-		return false;
+	if (ok)
+	{
+		float elapsed_time = std::max<float>(0.016f, (float)m_timer.elapsed());
+		UpdateEventArgs updateEventArgs(elapsed_time, 0.0f);
+		RenderEventArgs renderEventArgs(elapsed_time, 0.0f);
+		if (FAILED(m_pGame->OnUpdate(updateEventArgs)))
+			return false;
+		if (FAILED(m_pGame->OnRender(renderEventArgs)))
+			return false;
+		m_timer.reset();
+	}
 	return ok;
 }
 
@@ -134,7 +136,7 @@ MouseButtonEventArgs::MouseButton DecodeMouseButton(UINT messageID)
 LRESULT CALLBACK Direct3DWindow::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
 {
 	
-	m_cam.HandleMessages(hwnd, umsg, wparam, lparam);
+	
 	switch (umsg)
 	{
 	case WM_KEYDOWN:
@@ -264,6 +266,7 @@ LRESULT CALLBACK Direct3DWindow::MessageHandler(HWND hwnd, UINT umsg, WPARAM wpa
 	break;
 	
 	}
+	m_cam.HandleMessages(hwnd, umsg, wparam, lparam);
 	return DefWindowProc(hwnd, umsg, wparam, lparam);
 }
 

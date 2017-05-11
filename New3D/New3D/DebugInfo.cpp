@@ -21,7 +21,7 @@ void MenuViewPort::reset(D2D1_POINT_2F anchor)
 void MenuViewPort::setText(std::wstring txt, D2D1_COLOR_F color)
 {
 	FontFactory::FontDesc desc;
-	int len = lstrlenW(txt.c_str())* (int)(pFormat->GetFontSize() * 0.55f);
+	int len = lstrlenW(txt.c_str())* (int)(pFormat->GetFontSize() * 0.75f);
 	if (len > (frame.right - frame.left))
 	{
 		frame.right = frame.left + len;
@@ -42,5 +42,21 @@ void MenuViewPort::draw(Graphics & gfx)
 	for (auto& it : lines)
 	{
 		gfx.D2D_RenderText(it);
+	}
+}
+
+void DebugButtonStrip::draw(Graphics & gfx)
+{
+	for (auto& it : catagory_names)
+	{
+		if (m_items[it].enabled)
+		{
+			gfx.D2D_DrawFilledRectangle(nullptr, m_items[it].text.drawRect, D2D1::ColorF(1.0f, 0.0f, 0.0f, 0.5f));
+			m_items[it].menu.draw(gfx);
+		}
+		else
+			gfx.D2D_DrawFilledRectangle(nullptr, m_items[it].text.drawRect, D2D1::ColorF(0.0f, 0.0f, 0.8f, 0.5f));
+		
+		gfx.D2D_RenderText(m_items[it].text);
 	}
 }

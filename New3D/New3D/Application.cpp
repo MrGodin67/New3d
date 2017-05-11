@@ -24,7 +24,7 @@ bool Application::InitTerrain()
 
 
 Application::Application(Direct3DWindow& wnd)
-	:Game(wnd)
+	:Game(wnd),DebugStrip(10,10,gfx.D2DFonts()->GetFormat("Tahoma12"))
 {
 	
 	
@@ -75,7 +75,24 @@ Application::Application(Direct3DWindow& wnd)
 	InitTerrain();
 	terrainTime = m_timer.elapsed();
 	m_shotTimer.reset();
+	DebugStrip.addButton("stats", L"Render Times");
+	DebugStrip.addText("stats", L"h1");
+	DebugStrip.addText("stats", L"h22");
+	DebugStrip.addText("stats", L"h333");
+	DebugStrip.addText("stats", L"h4444");
+
+
+	DebugStrip.addButton("stats2", L"Render Times 2");
+	DebugStrip.addText("stats2", L"T 1");
+	DebugStrip.addText("stats2", L"TT 22");
+	DebugStrip.addText("stats2", L"TTT 333");
+	DebugStrip.addText("stats2", L"TTTT 4444");
+	DebugStrip.addText("stats2", L"What the hell's = 10024");
+
+
+	DebugStrip.addButton("stats3", L"Render 2");
 	int x = 0;
+	
 }
 
 
@@ -98,9 +115,9 @@ HRESULT Application::OnUpdate(UpdateEventArgs & e)
 
 	debugDisplay.setText( L"Camera X (" + wString(FormatDesc(m_cam.GetEyePt2().x,2.0f)) + L") : Y : (" + wString(FormatDesc(m_cam.GetEyePt2().y, 2.0f)) + L") Z : (" + wString(FormatDesc(m_cam.GetEyePt2().z, 2.0f)) + L")");
 	
-	debugDisplay.setText(L"Terrain Creation:" + std::to_wstring(terrainTime));
-	debugDisplay.setText(wString(L"Percision : ") + wString(FormatDesc(100.1234567f,2.0f)));
-	
+	debugDisplay.setText(L"Terrain Creation : " + wString(terrainTime));
+	debugDisplay.setText(wString(L"Number Terrain cells : ") + wString(m_terrain->RenderCount()));
+	debugDisplay.setText(wString(L"Mouse : ") + wString(mouseX) + L" : " + wString(mouseY));
 	
 	
 	static std::wstring shot_data_string = L"";
@@ -159,6 +176,7 @@ HRESULT Application::OnRender(RenderEventArgs & e)
 {
 	gfx.BeginScene(DirectX::XMFLOAT4(0.85f, 0.85f, 0.85f, 1.0f));
 	//gfx.D2D_RenderText(txtDesc);
+	m_timer.reset();
 	gfx.RenderTerrain(m_terrain.get());
 	//m_player->RenderDebugStats(gfx, m_ammo.size());
 	//gfx.RenderModel(model, XMMatrixTranslation(128.0f,0.5f,128.0f));
@@ -167,7 +185,11 @@ HRESULT Application::OnRender(RenderEventArgs & e)
 		gfx.RenderModel(model, it.GetMatrix());
 	}
 	m_retical->Draw(gfx);
+	
+	debugDisplay.setText(wString(L"Rendering : ") + wString(FormatDesc((float)m_timer.elapsed(), 4.0f)));
+
 	debugDisplay.draw(gfx);
+	DebugStrip.draw(gfx);
 	gfx.EndScene();
 	return S_OK;
 }
@@ -180,10 +202,15 @@ void Application::OnKeyPressed(KeyEventArgs & e)
 
 void Application::OnKeyReleased(KeyEventArgs & e)
 {
+
 }
 
 void Application::OnMouseMoved(MouseMotionEventArgs & e)
 {
+	mouseX = e.X;
+	mouseY = e.Y;
+
+
 }
 
 void Application::OnMouseButtonPressed(MouseButtonEventArgs & e)
@@ -193,7 +220,8 @@ void Application::OnMouseButtonPressed(MouseButtonEventArgs & e)
 		
 		fire_buttonDown = e.LeftButton;
 	}
-
+	if (e.MiddleButton)
+		DebugStrip.onMouseClick(mouseX, mouseY);
 }
 
 void Application::OnMouseButtonReleased(MouseButtonEventArgs & e)

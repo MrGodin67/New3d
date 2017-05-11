@@ -29,6 +29,8 @@ private:
 	bool InitTerrain();
 	FontFactory::FontDesc txtDesc;
 	MenuViewPort debugDisplay;
+	DebugButtonStrip DebugStrip;
+	int mouseX, mouseY;
 public:
 	
 	
